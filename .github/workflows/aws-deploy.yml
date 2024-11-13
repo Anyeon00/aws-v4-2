@@ -7,7 +7,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
+      - name: Checkout  #name은 안중요함 아무거나 해도 됨
         uses: actions/checkout@v4 #CI에 배포
 
       - name: Set up JDK 17
@@ -22,3 +22,33 @@ jobs:
       - name: build gradle
         run: ./gradlew -x clean build  #clean build # -x 옵션 : 테스트 무시하고 빌드(안하면 테스트에서 오류)
         shell: bash
+      #여기까지 CI 작업
+
+      - name: Get current time
+        uses: 1466587594/get-current-time@v2
+        id: current-time
+        with:
+          format: YYYY-MM-DDTHH-mm-ss
+          utcOffset: "+09:00"
+
+      # 우리 프로젝트를 build한 jar 파일이랑 Procfile이랑 ebextensions 폴더까지 다 묶어서 deploy.zip 파일로 만들었음
+      - name: make deploy package
+        run: |
+          mkdir -p deploy
+          cp build/libs/*.jar deploy/application.jar
+          cp Procfile deploy/Procfile
+          cp -r .ebextensions deploy/.ebextensions
+          cd deploy && zip -r deploy.zip
+
+      # 앞에서 만든 deploy.zip을 빈스톡한테 던져서 실행하게 해야 함. 이 과정에서 IAM 사용자 정보가 필요함.
+      - name: deploy to beanstalk
+        uses: einargilsson/beanstalk-deploy@v22
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ProgrammersBE
+          environment_name: ProgrammersBE-env
+          version_label: github-action-${{ steps.current-time }}
+          region: ap-northeast-2 #서울 지역코드
+          deployment_package: deploy/deploy.zip
+
