@@ -16,7 +16,7 @@ jobs:
           java-version: 17
 
       - name: Grant for gradlew #권한 부여
-        run: chmod +x ./gradlew
+        run: chmod -x ./gradlew
         shell: bash
 
       - name: build gradle
