@@ -42,7 +42,7 @@ jobs:
 
       # 앞에서 만든 deploy.zip을 빈스톡한테 던져서 실행하게 해야 함. 이 과정에서 IAM 사용자 정보가 필요함.
       - name: deploy to beanstalk
-        uses: einargilsson/beanstalk-deploy@v22
+        uses: einaregilsson/beanstalk-deploy@v22
         with:
           aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
